@@ -20,6 +20,7 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/prometheus/common/model"
 
+	"github.com/prometheus/prometheus/pkg/exemplar"
 	"github.com/prometheus/prometheus/pkg/labels"
 	tsdb_errors "github.com/prometheus/prometheus/tsdb/errors"
 )
@@ -155,6 +156,32 @@ func (f *fanoutAppender) Append(ref uint64, l labels.Labels, t int64, v float64)
 		}
 	}
 	return ref, nil
+}
+
+func (f *fanoutAppender) AddExemplar(l labels.Labels, e exemplar.Exemplar) error {
+	if err := f.primary.AddExemplar(l, e); err != nil {
+		return err
+	}
+
+	for _, appender := range f.secondaries {
+		if err := appender.AddExemplar(l, e); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (f *fanoutAppender) AddExemplarFast(ref uint64, e exemplar.Exemplar) error {
+	if err := f.primary.AddExemplarFast(ref, e); err != nil {
+		return err
+	}
+
+	for _, appender := range f.secondaries {
+		if err := appender.AddExemplarFast(ref, e); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (f *fanoutAppender) Commit() (err error) {
