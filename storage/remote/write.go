@@ -24,6 +24,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
 	"github.com/prometheus/prometheus/config"
+	"github.com/prometheus/prometheus/pkg/exemplar"
 	"github.com/prometheus/prometheus/pkg/labels"
 	"github.com/prometheus/prometheus/storage"
 	"github.com/prometheus/prometheus/tsdb/wal"
@@ -219,6 +220,14 @@ func (t *timestampTracker) Append(_ uint64, _ labels.Labels, ts int64, _ float64
 		t.highestTimestamp = ts
 	}
 	return 0, nil
+}
+
+func (t *timestampTracker) AddExemplar(_ labels.Labels, _ exemplar.Exemplar) error {
+	return nil
+}
+
+func (t *timestampTracker) AddExemplarFast(_ uint64, _ exemplar.Exemplar) error {
+	return nil
 }
 
 // Commit implements storage.Appender.
