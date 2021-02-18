@@ -143,19 +143,19 @@ var (
 	targetScrapeSampleDuplicate = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "prometheus_target_scrapes_sample_duplicate_timestamp_total",
-			Help: "Total number of samples rejected due to duplicate timestamps but different values",
+			Help: "Total number of samples rejected due to duplicate timestamps but different values.",
 		},
 	)
 	targetScrapeSampleOutOfOrder = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "prometheus_target_scrapes_sample_out_of_order_total",
-			Help: "Total number of samples rejected due to not being out of the expected order",
+			Help: "Total number of samples rejected due to not being out of the expected order.",
 		},
 	)
 	targetScrapeSampleOutOfBounds = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "prometheus_target_scrapes_sample_out_of_bounds_total",
-			Help: "Total number of samples rejected due to timestamp falling outside of the time bounds",
+			Help: "Total number of samples rejected due to timestamp falling outside of the time bounds.",
 		},
 	)
 	targetScrapeCacheFlushForced = prometheus.NewCounter(
@@ -167,7 +167,7 @@ var (
 	targetScrapeExemplarOutOfOrder = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "prometheus_target_scrapes_exemplar_out_of_order_total",
-			Help: "Total number of exemplar rejected due to not being out of the expected order",
+			Help: "Total number of exemplar rejected due to not being out of the expected order.",
 		},
 	)
 )
