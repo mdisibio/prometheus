@@ -477,7 +477,7 @@ func (api *API) queryExemplars(r *http.Request) apiFuncResult {
 	if err != nil {
 		return invalidParamError(err, "start")
 	}
-	end, err := parseTimeParam(r, "end", minTime)
+	end, err := parseTimeParam(r, "end", maxTime)
 	if err != nil {
 		return invalidParamError(err, "end")
 	}
