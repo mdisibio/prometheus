@@ -99,13 +99,18 @@ func (ce *CircularExemplarStorage) Select(start, end int64, matchers ...[]*label
 	ce.lock.RLock()
 	defer ce.lock.RUnlock()
 
-	// Checking against all exemplars.
+	// Loop through each index entry, which will point us to first/last exemplar for each series.
 	for _, idx := range ce.index {
 		var se exemplar.QueryResult
 		e := ce.exemplars[idx.first]
+		if !matchesSomeMatcherSet(e.seriesLabels, matchers) {
+			continue
+		}
 		se.SeriesLabels = e.seriesLabels
+
+		// Loop through all exemplars in the circular buffer for the current series.
 		for e.exemplar.Ts <= end {
-			if e.exemplar.Ts >= start && matchesSomeMatcherSet(e.seriesLabels, matchers) {
+			if e.exemplar.Ts >= start {
 				se.Exemplars = append(se.Exemplars, e.exemplar)
 			}
 			if e.next == -1 {
