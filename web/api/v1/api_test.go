@@ -1569,6 +1569,29 @@ func testEndpoints(t *testing.T, api *API, tr *testTargetRetriever, es storage.E
 				},
 			},
 		},
+		{
+			endpoint: api.queryExemplars,
+			query: url.Values{
+				"query": []string{`{foo="boo"}`},
+			},
+			response: []exemplar.QueryResult{
+				{
+					SeriesLabels: labels.FromStrings("__name__", "test_metric3", "foo", "boo", "dup", "1"),
+					Exemplars: []exemplar.Exemplar{
+						{
+							Labels: labels.FromStrings("id", "abc"),
+							Value:  10,
+							Ts:     2000,
+						},
+						{
+							Labels: labels.FromStrings("id", "abc2"),
+							Value:  10,
+							Ts:     4053,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	if testLabelAPI {
