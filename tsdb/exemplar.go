@@ -15,6 +15,7 @@ package tsdb
 
 import (
 	"context"
+	"sort"
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -122,6 +123,10 @@ func (ce *CircularExemplarStorage) Select(start, end int64, matchers ...[]*label
 			ret = append(ret, se)
 		}
 	}
+
+	sort.Slice(ret, func(i, j int) bool {
+		return labels.Compare(ret[i].SeriesLabels, ret[j].SeriesLabels) < 0
+	})
 
 	return ret, nil
 }
