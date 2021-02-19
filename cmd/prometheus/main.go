@@ -1127,12 +1127,8 @@ func (n notReadyAppender) Append(ref uint64, l labels.Labels, t int64, v float64
 	return 0, tsdb.ErrNotReady
 }
 
-func (n notReadyAppender) AddExemplar(l labels.Labels, e exemplar.Exemplar) error {
-	return tsdb.ErrNotReady
-}
-
-func (n notReadyAppender) AddExemplarFast(ref uint64, e exemplar.Exemplar) error {
-	return tsdb.ErrNotReady
+func (n notReadyAppender) AppendExemplar(ref uint64, l labels.Labels, e exemplar.Exemplar) (uint64, error) {
+	return 0, tsdb.ErrNotReady
 }
 
 func (n notReadyAppender) Commit() error { return tsdb.ErrNotReady }

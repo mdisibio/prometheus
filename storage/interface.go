@@ -174,11 +174,17 @@ type Appender interface {
 	Append(ref uint64, l labels.Labels, t int64, v float64) (uint64, error)
 
 	// AddExemplar adds an exemplar for the given series labels.
-	AddExemplar(l labels.Labels, e exemplar.Exemplar) error
-
-	// AddExemplarFast adds an exemplar for the referenced series. It is generally
-	// faster than adding a exemplar by providing its full series label set.
-	AddExemplarFast(ref uint64, e exemplar.Exemplar) error
+	// An optional reference number can be provided to accelerate calls.
+	// A reference number is returned which can be used to add further
+	// samples in the same or later transactions.
+	// Returned reference numbers are ephemeral and may be rejected in calls
+	// to Append() at any point. Adding the sample via Append() returns a new
+	// reference number.
+	// If the reference is 0 it must not be used for caching.
+	// Note that in our current implementation of Prometheus' exemplar storage
+	// calls to Append should generate the reference numbers, AppendExemplar
+	// generating a new reference number should be considered possible erroneous behaviour and be logged.
+	AppendExemplar(ref uint64, l labels.Labels, e exemplar.Exemplar) (uint64, error)
 
 	// Commit submits the collected samples and purges the batch. If Commit
 	// returns a non-nil error, it also rolls back all modifications made in

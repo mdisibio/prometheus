@@ -2020,17 +2020,18 @@ func TestHeadExemplars(t *testing.T) {
 	head, _ := newTestHead(t, chunkRange, false)
 	app := head.Appender(context.Background())
 
+	l := labels.FromStrings("traceId", "123")
 	// It is perfectly valid to add Exemplars before the current start time -
 	// histogram buckets that haven't been update in a while could still be
 	// exported exemplars from an hour ago.
 	ref, err := app.Append(0, labels.Labels{{Name: "a", Value: "b"}}, 100, 100)
 	require.NoError(t, err)
-	require.NoError(t, app.AddExemplarFast(ref, exemplar.Exemplar{
-		Labels: labels.FromStrings("traceId", "123"),
+	_, err = app.AppendExemplar(ref, l, exemplar.Exemplar{
+		Labels: l,
 		HasTs:  true,
 		Ts:     -1000,
 		Value:  1,
-	}))
+	})
 	require.NoError(t, err)
 	require.NoError(t, app.Commit())
 	require.NoError(t, head.Close())

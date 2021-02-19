@@ -222,12 +222,8 @@ func (t *timestampTracker) Append(_ uint64, _ labels.Labels, ts int64, _ float64
 	return 0, nil
 }
 
-func (t *timestampTracker) AddExemplar(_ labels.Labels, _ exemplar.Exemplar) error {
-	return nil
-}
-
-func (t *timestampTracker) AddExemplarFast(_ uint64, _ exemplar.Exemplar) error {
-	return nil
+func (t *timestampTracker) AppendExemplar(_ uint64, _ labels.Labels, _ exemplar.Exemplar) (uint64, error) {
+	return 0, nil
 }
 
 // Commit implements storage.Appender.
