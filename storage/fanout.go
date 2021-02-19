@@ -158,30 +158,18 @@ func (f *fanoutAppender) Append(ref uint64, l labels.Labels, t int64, v float64)
 	return ref, nil
 }
 
-func (f *fanoutAppender) AddExemplar(l labels.Labels, e exemplar.Exemplar) error {
-	if err := f.primary.AddExemplar(l, e); err != nil {
-		return err
+func (f *fanoutAppender) AppendExemplar(ref uint64, l labels.Labels, e exemplar.Exemplar) (uint64, error) {
+	ref, err := f.primary.AppendExemplar(ref, l, e)
+	if err != nil {
+		return ref, err
 	}
 
 	for _, appender := range f.secondaries {
-		if err := appender.AddExemplar(l, e); err != nil {
-			return err
+		if _, err := appender.AppendExemplar(ref, l, e); err != nil {
+			return 0, err
 		}
 	}
-	return nil
-}
-
-func (f *fanoutAppender) AddExemplarFast(ref uint64, e exemplar.Exemplar) error {
-	if err := f.primary.AddExemplarFast(ref, e); err != nil {
-		return err
-	}
-
-	for _, appender := range f.secondaries {
-		if err := appender.AddExemplarFast(ref, e); err != nil {
-			return err
-		}
-	}
-	return nil
+	return ref, nil
 }
 
 func (f *fanoutAppender) Commit() (err error) {

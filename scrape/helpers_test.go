@@ -30,10 +30,12 @@ func (a nopAppendable) Appender(_ context.Context) storage.Appender {
 type nopAppender struct{}
 
 func (a nopAppender) Append(uint64, labels.Labels, int64, float64) (uint64, error) { return 0, nil }
-func (a nopAppender) AddExemplar(labels.Labels, exemplar.Exemplar) error           { return nil }
-func (a nopAppender) AddExemplarFast(uint64, exemplar.Exemplar) error              { return nil }
-func (a nopAppender) Commit() error                                                { return nil }
-func (a nopAppender) Rollback() error                                              { return nil }
+func (a nopAppender) AppendExemplar(uint64, labels.Labels, exemplar.Exemplar) (uint64, error) {
+	return 0, nil
+}
+func (a nopAppender) AddExemplarFast(uint64, exemplar.Exemplar) error { return nil }
+func (a nopAppender) Commit() error                                   { return nil }
+func (a nopAppender) Rollback() error                                 { return nil }
 
 type sample struct {
 	metric labels.Labels
@@ -50,8 +52,6 @@ type collectResultAppender struct {
 	rolledbackResult []sample
 	pendingExemplars []exemplar.Exemplar
 	resultExemplars  []exemplar.Exemplar
-
-	mapper map[uint64]labels.Labels
 }
 
 func (a *collectResultAppender) Append(ref uint64, lset labels.Labels, t int64, v float64) (uint64, error) {
@@ -73,22 +73,13 @@ func (a *collectResultAppender) Append(ref uint64, lset labels.Labels, t int64, 
 	return ref, err
 }
 
-func (a *collectResultAppender) AddExemplar(l labels.Labels, e exemplar.Exemplar) error {
+func (a *collectResultAppender) AppendExemplar(ref uint64, l labels.Labels, e exemplar.Exemplar) (uint64, error) {
 	a.pendingExemplars = append(a.pendingExemplars, e)
 	if a.next == nil {
-		return nil
+		return 0, nil
 	}
 
-	return a.next.AddExemplar(l, e)
-}
-
-func (a *collectResultAppender) AddExemplarFast(ref uint64, e exemplar.Exemplar) error {
-	a.pendingExemplars = append(a.pendingExemplars, e)
-	if a.next == nil {
-		return nil
-	}
-
-	return a.next.AddExemplarFast(ref, e)
+	return a.next.AppendExemplar(ref, l, e)
 }
 
 func (a *collectResultAppender) Commit() error {

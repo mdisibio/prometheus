@@ -1089,23 +1089,16 @@ func (a *initAppender) Append(ref uint64, lset labels.Labels, t int64, v float64
 	return a.app.Append(ref, lset, t, v)
 }
 
-func (a *initAppender) AddExemplar(l labels.Labels, e exemplar.Exemplar) error {
+func (a *initAppender) AppendExemplar(ref uint64, l labels.Labels, e exemplar.Exemplar) (uint64, error) {
 	if a.app != nil {
-		return a.app.AddExemplar(l, e)
+		return a.app.AppendExemplar(ref, l, e)
 	}
-	// We should never reach here given we would call Add before AddExemplar
+	// We should never reach here given we would call Append before AppendExemplar
 	// and we probably want to always base head/WAL min time on sample times.
 	a.head.initTime(e.Ts)
 	a.app = a.head.appender()
 
-	return a.app.AddExemplar(l, e)
-}
-
-func (a *initAppender) AddExemplarFast(ref uint64, e exemplar.Exemplar) error {
-	if a.app == nil {
-		return storage.ErrNotFound
-	}
-	return a.app.AddExemplarFast(ref, e)
+	return a.app.AppendExemplar(ref, l, e)
 }
 
 func (a *initAppender) Commit() error {
@@ -1298,21 +1291,21 @@ func (a *headAppender) Append(ref uint64, lset labels.Labels, t int64, v float64
 	return s.ref, nil
 }
 
-func (a *headAppender) AddExemplar(lset labels.Labels, e exemplar.Exemplar) error {
+func (a *headAppender) AppendExemplar(ref uint64, lset labels.Labels, e exemplar.Exemplar) (uint64, error) {
 	// Ensure no empty labels have gotten through.
 	lset = lset.WithoutEmpty()
 
 	if len(lset) == 0 {
-		return errors.Wrap(ErrInvalidExemplar, "empty labelset")
+		return 0, errors.Wrap(ErrInvalidExemplar, "empty labelset")
 	}
 
 	if l, dup := lset.HasDuplicateLabelNames(); dup {
-		return errors.Wrap(ErrInvalidExemplar, fmt.Sprintf(`label name "%s" is not unique`, l))
+		return 0, errors.Wrap(ErrInvalidExemplar, fmt.Sprintf(`label name "%s" is not unique`, l))
 	}
 
 	s, created, err := a.head.getOrCreate(lset.Hash(), lset)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// In theory the series should never be created as a result of an AddExemplar call.
@@ -1323,19 +1316,10 @@ func (a *headAppender) AddExemplar(lset labels.Labels, e exemplar.Exemplar) erro
 			Labels: lset,
 		})
 	}
-	return a.AddExemplarFast(s.ref, e)
-}
-
-func (a *headAppender) AddExemplarFast(ref uint64, e exemplar.Exemplar) error {
-	s := a.head.series.getByID(ref)
-	if s == nil {
-		return storage.ErrNotFound
-	}
-
-	// TODO: check for out of order in future PR.
 
 	a.exemplars = append(a.exemplars, exemplarWithSeriesRef{ref, e})
-	return nil
+
+	return s.ref, nil
 }
 
 func (a *headAppender) log() error {

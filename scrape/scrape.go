@@ -1369,7 +1369,7 @@ loop:
 				if !e.HasTs {
 					e.Ts = t
 				}
-				exemplarErr := app.AddExemplar(lset, e)
+				_, exemplarErr := app.AppendExemplar(ref, lset, e)
 				exemplarErr = sl.checkAddExemplarError(exemplarErr, e, &appErrs)
 				if exemplarErr != nil {
 					// Since exemplar storage is still experimental, we don't fail the scrape on ingestion errors.
