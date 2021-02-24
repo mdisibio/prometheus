@@ -66,7 +66,7 @@ type circularBufferEntry struct {
 // If we assume the average case 95 bytes per exemplar we can fit 5651272 exemplars in
 // 1GB of extra memory, accounting for the fact that this is heap allocated space.
 // If len < 1, then the exemplar storage is disabled.
-func NewCircularExemplarStorage(len int, reg prometheus.Registerer) (storage.ExemplarStorage, error) {
+func NewCircularExemplarStorage(len int, reg prometheus.Registerer) (ExemplarStorage, error) {
 	if len < 1 {
 		return &noopExemplarStorage{}, nil
 	}
@@ -77,11 +77,7 @@ func NewCircularExemplarStorage(len int, reg prometheus.Registerer) (storage.Exe
 	}, nil
 }
 
-func (ce *CircularExemplarStorage) Appender() storage.ExemplarAppender {
-	return ce
-}
-
-func (ce *CircularExemplarStorage) ExemplarAppender() storage.ExemplarAppender {
+func (ce *CircularExemplarStorage) Appender() *CircularExemplarStorage {
 	return ce
 }
 
@@ -205,22 +201,16 @@ func (ce *CircularExemplarStorage) AddExemplar(l labels.Labels, e exemplar.Exemp
 
 type noopExemplarStorage struct{}
 
-func (noopExemplarStorage) ExemplarQuerier(context.Context) (storage.ExemplarQuerier, error) {
-	return &noopExemplarQuerier{}, nil
+func (noopExemplarStorage) AddExemplar(l labels.Labels, e exemplar.Exemplar) error {
+	return nil
 }
 
-func (noopExemplarStorage) ExemplarAppender() storage.ExemplarAppender {
-	return &noopExemplarAppender{}
+func (noopExemplarStorage) ExemplarQuerier(context.Context) (storage.ExemplarQuerier, error) {
+	return &noopExemplarQuerier{}, nil
 }
 
 type noopExemplarQuerier struct{}
 
 func (noopExemplarQuerier) Select(_, _ int64, _ ...[]*labels.Matcher) ([]exemplar.QueryResult, error) {
 	return nil, nil
-}
-
-type noopExemplarAppender struct{}
-
-func (noopExemplarAppender) AddExemplar(_ labels.Labels, _ exemplar.Exemplar) error {
-	return nil
 }

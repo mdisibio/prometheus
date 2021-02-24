@@ -354,9 +354,8 @@ func TestEndpoints(t *testing.T) {
 			},
 		},
 	}
-
 	for _, ed := range exemplars {
-		suite.ExemplarStorage().ExemplarAppender().AddExemplar(ed.SeriesLabels, ed.Exemplars[0])
+		suite.ExemplarStorage().ExemplarAppender().AppendExemplar(0, ed.SeriesLabels, ed.Exemplars[0])
 		require.NoError(t, err, "failed to add exemplar: %+v", ed.Exemplars[0])
 	}
 
@@ -380,7 +379,7 @@ func TestEndpoints(t *testing.T) {
 		api := &API{
 			Queryable:             suite.Storage(),
 			QueryEngine:           suite.QueryEngine(),
-			ExemplarQueryable:     suite.ExemplarStorage(),
+			ExemplarQueryable:     suite.ExemplarQueryable(),
 			targetRetriever:       testTargetRetriever.toFactory(),
 			alertmanagerRetriever: testAlertmanagerRetriever{}.toFactory(),
 			flagsMap:              sampleFlagMap,
@@ -444,7 +443,7 @@ func TestEndpoints(t *testing.T) {
 		api := &API{
 			Queryable:             remote,
 			QueryEngine:           suite.QueryEngine(),
-			ExemplarQueryable:     suite.ExemplarStorage(),
+			ExemplarQueryable:     suite.ExemplarQueryable(),
 			targetRetriever:       testTargetRetriever.toFactory(),
 			alertmanagerRetriever: testAlertmanagerRetriever{}.toFactory(),
 			flagsMap:              sampleFlagMap,
@@ -2026,7 +2025,7 @@ func testEndpoints(t *testing.T, api *API, tr *testTargetRetriever, es storage.E
 
 					for _, te := range test.exemplars {
 						for _, e := range te.Exemplars {
-							err := es.ExemplarAppender().AddExemplar(te.SeriesLabels, e)
+							_, err := es.ExemplarAppender().AppendExemplar(0, te.SeriesLabels, e)
 							if err != nil {
 								t.Fatal(err)
 							}
