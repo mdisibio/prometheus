@@ -15,6 +15,7 @@ package scrape
 
 import (
 	"context"
+	"math/rand"
 
 	"github.com/prometheus/prometheus/pkg/exemplar"
 	"github.com/prometheus/prometheus/pkg/labels"
@@ -33,9 +34,8 @@ func (a nopAppender) Append(uint64, labels.Labels, int64, float64) (uint64, erro
 func (a nopAppender) AppendExemplar(uint64, labels.Labels, exemplar.Exemplar) (uint64, error) {
 	return 0, nil
 }
-func (a nopAppender) AddExemplarFast(uint64, exemplar.Exemplar) error { return nil }
-func (a nopAppender) Commit() error                                   { return nil }
-func (a nopAppender) Rollback() error                                 { return nil }
+func (a nopAppender) Commit() error   { return nil }
+func (a nopAppender) Rollback() error { return nil }
 
 type sample struct {
 	metric labels.Labels
@@ -61,15 +61,17 @@ func (a *collectResultAppender) Append(ref uint64, lset labels.Labels, t int64, 
 		v:      v,
 	})
 
+	if ref == 0 {
+		ref = rand.Uint64()
+	}
 	if a.next == nil {
-		return 0, nil
+		return ref, nil
 	}
 
 	ref, err := a.next.Append(ref, lset, t, v)
 	if err != nil {
 		return 0, err
 	}
-
 	return ref, err
 }
 

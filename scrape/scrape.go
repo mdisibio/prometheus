@@ -1365,22 +1365,23 @@ loop:
 				seriesAdded++
 			}
 
-			if hasExemplar := p.Exemplar(&e); hasExemplar {
-				if !e.HasTs {
-					e.Ts = t
-				}
-				_, exemplarErr := app.AppendExemplar(ref, lset, e)
-				exemplarErr = sl.checkAddExemplarError(exemplarErr, e, &appErrs)
-				if exemplarErr != nil {
-					// Since exemplar storage is still experimental, we don't fail the scrape on ingestion errors.
-					level.Debug(sl.l).Log("msg", "Error while adding exemplar in AddExemplar", "exemplar", e, "err", err)
-				}
-			}
 		}
 
 		// Increment added even if there's an error so we correctly report the
 		// number of samples remaining after relabeling.
 		added++
+
+		if hasExemplar := p.Exemplar(&e); hasExemplar {
+			if !e.HasTs {
+				e.Ts = t
+			}
+			_, exemplarErr := app.AppendExemplar(ref, lset, e)
+			exemplarErr = sl.checkAddExemplarError(exemplarErr, e, &appErrs)
+			if exemplarErr != nil {
+				// Since exemplar storage is still experimental, we don't fail the scrape on ingestion errors.
+				level.Debug(sl.l).Log("msg", "Error while adding exemplar in AddExemplar", "exemplar", e, "err", err)
+			}
+		}
 
 	}
 	if sampleLimitErr != nil {

@@ -55,6 +55,11 @@ var (
 	ErrAppenderClosed = errors.New("appender closed")
 )
 
+type ExemplarStorage interface {
+	storage.ExemplarQueryable
+	AddExemplar(labels.Labels, exemplar.Exemplar) error
+}
+
 // Head handles reads and writes of time series data within a time window.
 type Head struct {
 	chunkRange            atomic.Int64
@@ -67,7 +72,7 @@ type Head struct {
 	metrics       *headMetrics
 	opts          *HeadOptions
 	wal           *wal.WAL
-	exemplars     storage.ExemplarStorage
+	exemplars     ExemplarStorage
 	logger        log.Logger
 	appendPool    sync.Pool
 	exemplarsPool sync.Pool
@@ -390,7 +395,7 @@ func (h *Head) ExemplarQuerier(ctx context.Context) (storage.ExemplarQuerier, er
 }
 
 func (h *Head) ExemplarStorage() storage.ExemplarStorage {
-	return h.exemplars
+	return h
 }
 
 // processWALSamples adds a partition of samples it receives to the head and passes
@@ -1143,7 +1148,7 @@ func (h *Head) appender() *headAppender {
 		exemplars:             h.getExemplarBuffer(),
 		appendID:              appendID,
 		cleanupAppendIDsBelow: cleanupAppendIDsBelow,
-		exemplarAppender:      h.exemplars.ExemplarAppender(),
+		exemplarAppender:      h.exemplars,
 	}
 }
 
@@ -1158,6 +1163,19 @@ func max(a, b int64) int64 {
 		return a
 	}
 	return b
+}
+
+func (h *Head) ExemplarAppender() storage.ExemplarAppender {
+	h.metrics.activeAppenders.Inc()
+
+	// The head cache might not have a starting point yet. The init appender
+	// picks up the first appended timestamp as the base.
+	if h.MinTime() == math.MaxInt64 {
+		return &initAppender{
+			head: h,
+		}
+	}
+	return h.appender()
 }
 
 func (h *Head) getAppendBuffer() []record.RefSample {
@@ -1221,7 +1239,7 @@ type headAppender struct {
 	head             *Head
 	minValidTime     int64 // No samples below this timestamp are allowed.
 	mint, maxt       int64
-	exemplarAppender storage.ExemplarAppender
+	exemplarAppender ExemplarStorage
 
 	series       []record.RefSeries
 	samples      []record.RefSample

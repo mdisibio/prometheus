@@ -173,7 +173,23 @@ type Appender interface {
 	// If the reference is 0 it must not be used for caching.
 	Append(ref uint64, l labels.Labels, t int64, v float64) (uint64, error)
 
-	// AddExemplar adds an exemplar for the given series labels.
+	// Commit submits the collected samples and purges the batch. If Commit
+	// returns a non-nil error, it also rolls back all modifications made in
+	// the appender so far, as Rollback would do. In any case, an Appender
+	// must not be used anymore after Commit has been called.
+	Commit() error
+
+	// Rollback rolls back all modifications made in the appender so far.
+	// Appender has to be discarded after rollback.
+	Rollback() error
+
+	ExemplarAppender
+}
+
+// ExemplarAppender provides an interface for adding samples to exemplar storage, which
+// within Prometheus is in-memory only.
+type ExemplarAppender interface {
+	// AppendExemplar adds an exemplar for the given series labels.
 	// An optional reference number can be provided to accelerate calls.
 	// A reference number is returned which can be used to add further
 	// samples in the same or later transactions.
@@ -185,23 +201,6 @@ type Appender interface {
 	// calls to Append should generate the reference numbers, AppendExemplar
 	// generating a new reference number should be considered possible erroneous behaviour and be logged.
 	AppendExemplar(ref uint64, l labels.Labels, e exemplar.Exemplar) (uint64, error)
-
-	// Commit submits the collected samples and purges the batch. If Commit
-	// returns a non-nil error, it also rolls back all modifications made in
-	// the appender so far, as Rollback would do. In any case, an Appender
-	// must not be used anymore after Commit has been called.
-	Commit() error
-
-	// Rollback rolls back all modifications made in the appender so far.
-	// Appender has to be discarded after rollback.
-	Rollback() error
-}
-
-// ExemplarAppender provides an interface for adding samples to exemplar storage, which
-// within Prometheus is in-memory only.
-type ExemplarAppender interface {
-	// Add adds an exemplar to the for the given series labels.
-	AddExemplar(l labels.Labels, e exemplar.Exemplar) error
 }
 
 // SeriesSet contains a set of series.
