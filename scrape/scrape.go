@@ -1364,7 +1364,6 @@ loop:
 			if sampleAdded && sampleLimitErr == nil {
 				seriesAdded++
 			}
-
 		}
 
 		// Increment added even if there's an error so we correctly report the

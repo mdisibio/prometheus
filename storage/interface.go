@@ -46,12 +46,6 @@ type SampleAndChunkQueryable interface {
 	ChunkQueryable
 }
 
-// ExemplarAppendable allows creating exemplar appenders.
-type ExemplarAppendable interface {
-	// Appender returns a new exemplar appender for the exemplar storage.
-	ExemplarAppender() ExemplarAppender
-}
-
 // Storage ingests and manages samples, along with various indexes. All methods
 // are goroutine-safe. Storage implements storage.Appender.
 type Storage interface {
@@ -69,7 +63,7 @@ type Storage interface {
 // goroutine-safe. ExemplarStorage implements storage.ExemplarAppender and storage.ExemplarQuerier.
 type ExemplarStorage interface {
 	ExemplarQueryable
-	ExemplarAppendable
+	ExemplarAppender
 }
 
 // A Queryable handles queries against a storage.

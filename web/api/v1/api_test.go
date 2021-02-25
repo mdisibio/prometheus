@@ -350,7 +350,7 @@ func TestEndpoints(t *testing.T) {
 		},
 	}
 	for _, ed := range exemplars {
-		suite.ExemplarStorage().ExemplarAppender().AppendExemplar(0, ed.SeriesLabels, ed.Exemplars[0])
+		suite.ExemplarStorage().AppendExemplar(0, ed.SeriesLabels, ed.Exemplars[0])
 		require.NoError(t, err, "failed to add exemplar: %+v", ed.Exemplars[0])
 	}
 
@@ -2020,7 +2020,7 @@ func testEndpoints(t *testing.T, api *API, tr *testTargetRetriever, es storage.E
 
 					for _, te := range test.exemplars {
 						for _, e := range te.Exemplars {
-							_, err := es.ExemplarAppender().AppendExemplar(0, te.SeriesLabels, e)
+							_, err := es.AppendExemplar(0, te.SeriesLabels, e)
 							if err != nil {
 								t.Fatal(err)
 							}

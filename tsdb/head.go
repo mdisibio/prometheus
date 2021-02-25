@@ -394,10 +394,6 @@ func (h *Head) ExemplarQuerier(ctx context.Context) (storage.ExemplarQuerier, er
 	return h.exemplars.ExemplarQuerier(ctx)
 }
 
-func (h *Head) ExemplarStorage() storage.ExemplarStorage {
-	return h
-}
-
 // processWALSamples adds a partition of samples it receives to the head and passes
 // them on to other workers.
 // Samples before the mint timestamp are discarded.
@@ -1310,6 +1306,11 @@ func (a *headAppender) Append(ref uint64, lset labels.Labels, t int64, v float64
 }
 
 func (a *headAppender) AppendExemplar(ref uint64, lset labels.Labels, e exemplar.Exemplar) (uint64, error) {
+	s := a.head.series.getByID(ref)
+	if s == nil {
+		return 0, fmt.Errorf("unknown series ref. when trying to add exemplar: %d", ref)
+	}
+
 	// Ensure no empty labels have gotten through.
 	lset = lset.WithoutEmpty()
 
@@ -1319,20 +1320,6 @@ func (a *headAppender) AppendExemplar(ref uint64, lset labels.Labels, e exemplar
 
 	if l, dup := lset.HasDuplicateLabelNames(); dup {
 		return 0, errors.Wrap(ErrInvalidExemplar, fmt.Sprintf(`label name "%s" is not unique`, l))
-	}
-
-	s, created, err := a.head.getOrCreate(lset.Hash(), lset)
-	if err != nil {
-		return 0, err
-	}
-
-	// In theory the series should never be created as a result of an AddExemplar call.
-	if created {
-		level.Warn(a.head.logger).Log("msg", "Series was created in AddExemplar, this should never happen")
-		a.series = append(a.series, record.RefSeries{
-			Ref:    s.ref,
-			Labels: lset,
-		})
 	}
 
 	a.exemplars = append(a.exemplars, exemplarWithSeriesRef{ref, e})
