@@ -1091,6 +1091,11 @@ func (a *initAppender) Append(ref uint64, lset labels.Labels, t int64, v float64
 }
 
 func (a *initAppender) AppendExemplar(ref uint64, l labels.Labels, e exemplar.Exemplar) (uint64, error) {
+	// Check if exemplar storage is enabled.
+	if a.head.opts.NumExemplars == 0 {
+		return 0, nil
+	}
+
 	if a.app != nil {
 		return a.app.AppendExemplar(ref, l, e)
 	}
@@ -1306,6 +1311,11 @@ func (a *headAppender) Append(ref uint64, lset labels.Labels, t int64, v float64
 }
 
 func (a *headAppender) AppendExemplar(ref uint64, lset labels.Labels, e exemplar.Exemplar) (uint64, error) {
+	// Check if exemplar storage is enabled.
+	if a.head.opts.NumExemplars == 0 {
+		return 0, nil
+	}
+
 	s := a.head.series.getByID(ref)
 	if s == nil {
 		return 0, fmt.Errorf("unknown series ref. when trying to add exemplar: %d", ref)
