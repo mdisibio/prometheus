@@ -87,8 +87,9 @@ var expectedConf = &Config{
 					Action:       relabel.Drop,
 				},
 			},
-			QueueConfig:    DefaultQueueConfig,
-			MetadataConfig: DefaultMetadataConfig,
+			QueueConfig:      DefaultQueueConfig,
+			MetadataConfig:   DefaultMetadataConfig,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 		},
 		{
 			URL:            mustParseURL("http://remote2/push"),
@@ -101,6 +102,7 @@ var expectedConf = &Config{
 					CertFile: filepath.FromSlash("testdata/valid_cert_file"),
 					KeyFile:  filepath.FromSlash("testdata/valid_key_file"),
 				},
+				FollowRedirects: true,
 			},
 			Headers: map[string]string{"name": "value"},
 		},
@@ -108,10 +110,11 @@ var expectedConf = &Config{
 
 	RemoteReadConfigs: []*RemoteReadConfig{
 		{
-			URL:           mustParseURL("http://remote1/read"),
-			RemoteTimeout: model.Duration(1 * time.Minute),
-			ReadRecent:    true,
-			Name:          "default",
+			URL:              mustParseURL("http://remote1/read"),
+			RemoteTimeout:    model.Duration(1 * time.Minute),
+			ReadRecent:       true,
+			Name:             "default",
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 		},
 		{
 			URL:              mustParseURL("http://remote3/read"),
@@ -124,6 +127,7 @@ var expectedConf = &Config{
 					CertFile: filepath.FromSlash("testdata/valid_cert_file"),
 					KeyFile:  filepath.FromSlash("testdata/valid_key_file"),
 				},
+				FollowRedirects: true,
 			},
 		},
 	},
@@ -141,7 +145,11 @@ var expectedConf = &Config{
 			Scheme:      DefaultScrapeConfig.Scheme,
 
 			HTTPClientConfig: config.HTTPClientConfig{
-				BearerTokenFile: filepath.FromSlash("testdata/valid_token_file"),
+				Authorization: &config.Authorization{
+					Type:            "Bearer",
+					CredentialsFile: filepath.FromSlash("testdata/valid_token_file"),
+				},
+				FollowRedirects: true,
 			},
 
 			ServiceDiscoveryConfigs: discovery.Configs{
@@ -212,6 +220,7 @@ var expectedConf = &Config{
 					Username: "admin_name",
 					Password: "multiline\nmysecret\ntest",
 				},
+				FollowRedirects: true,
 			},
 			MetricsPath: "/my_path",
 			Scheme:      "https",
@@ -294,8 +303,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				&consul.SDConfig{
@@ -344,7 +354,12 @@ var expectedConf = &Config{
 					KeyFile:  filepath.FromSlash("testdata/valid_key_file"),
 				},
 
-				BearerToken: "mysecret",
+				Authorization: &config.Authorization{
+					Type:        "Bearer",
+					Credentials: "mysecret",
+				},
+
+				FollowRedirects: true,
 			},
 		},
 		{
@@ -354,8 +369,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				&kubernetes.SDConfig{
@@ -370,6 +386,7 @@ var expectedConf = &Config{
 							CertFile: filepath.FromSlash("testdata/valid_cert_file"),
 							KeyFile:  filepath.FromSlash("testdata/valid_key_file"),
 						},
+						FollowRedirects: true,
 					},
 					NamespaceDiscovery: kubernetes.NamespaceDiscovery{},
 				},
@@ -389,6 +406,7 @@ var expectedConf = &Config{
 					Username:     "myusername",
 					PasswordFile: filepath.FromSlash("testdata/valid_password_file"),
 				},
+				FollowRedirects: true,
 			},
 
 			ServiceDiscoveryConfigs: discovery.Configs{
@@ -400,6 +418,7 @@ var expectedConf = &Config{
 							"default",
 						},
 					},
+					HTTPClientConfig: config.DefaultHTTPClientConfig,
 				},
 			},
 		},
@@ -410,8 +429,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				&marathon.SDConfig{
@@ -425,6 +445,7 @@ var expectedConf = &Config{
 							CertFile: filepath.FromSlash("testdata/valid_cert_file"),
 							KeyFile:  filepath.FromSlash("testdata/valid_key_file"),
 						},
+						FollowRedirects: true,
 					},
 				},
 			},
@@ -436,8 +457,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				&ec2.SDConfig{
@@ -467,8 +489,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				&azure.SDConfig{
@@ -490,8 +513,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				&zookeeper.NerveSDConfig{
@@ -508,8 +532,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				discovery.StaticConfig{
@@ -529,8 +554,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: "/federate",
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      "/federate",
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				discovery.StaticConfig{
@@ -550,8 +576,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				discovery.StaticConfig{
@@ -571,8 +598,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				&triton.SDConfig{
@@ -597,13 +625,18 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				&digitalocean.SDConfig{
 					HTTPClientConfig: config.HTTPClientConfig{
-						BearerToken: "abcdef",
+						Authorization: &config.Authorization{
+							Type:        "Bearer",
+							Credentials: "abcdef",
+						},
+						FollowRedirects: true,
 					},
 					Port:            80,
 					RefreshInterval: model.Duration(60 * time.Second),
@@ -617,16 +650,18 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				&dockerswarm.SDConfig{
-					Filters:         []dockerswarm.Filter{},
-					Host:            "http://127.0.0.1:2375",
-					Role:            "nodes",
-					Port:            80,
-					RefreshInterval: model.Duration(60 * time.Second),
+					Filters:          []dockerswarm.Filter{},
+					Host:             "http://127.0.0.1:2375",
+					Role:             "nodes",
+					Port:             80,
+					RefreshInterval:  model.Duration(60 * time.Second),
+					HTTPClientConfig: config.DefaultHTTPClientConfig,
 				},
 			},
 		},
@@ -637,8 +672,9 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{&openstack.SDConfig{
 				Role:            "instance",
@@ -659,13 +695,18 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
 			ServiceDiscoveryConfigs: discovery.Configs{
 				&hetzner.SDConfig{
 					HTTPClientConfig: config.HTTPClientConfig{
-						BearerToken: "abcdef",
+						Authorization: &config.Authorization{
+							Type:        "Bearer",
+							Credentials: "abcdef",
+						},
+						FollowRedirects: true,
 					},
 					Port:            80,
 					RefreshInterval: model.Duration(60 * time.Second),
@@ -673,7 +714,8 @@ var expectedConf = &Config{
 				},
 				&hetzner.SDConfig{
 					HTTPClientConfig: config.HTTPClientConfig{
-						BasicAuth: &config.BasicAuth{Username: "abcdef", Password: "abcdef"},
+						BasicAuth:       &config.BasicAuth{Username: "abcdef", Password: "abcdef"},
+						FollowRedirects: true,
 					},
 					Port:            80,
 					RefreshInterval: model.Duration(60 * time.Second),
@@ -688,22 +730,26 @@ var expectedConf = &Config{
 			ScrapeInterval:  model.Duration(15 * time.Second),
 			ScrapeTimeout:   DefaultGlobalConfig.ScrapeTimeout,
 
-			MetricsPath: DefaultScrapeConfig.MetricsPath,
-			Scheme:      DefaultScrapeConfig.Scheme,
+			MetricsPath:      DefaultScrapeConfig.MetricsPath,
+			Scheme:           DefaultScrapeConfig.Scheme,
+			HTTPClientConfig: config.DefaultHTTPClientConfig,
 
-			ServiceDiscoveryConfigs: discovery.Configs{&eureka.SDConfig{
-				Server:          "http://eureka.example.com:8761/eureka",
-				RefreshInterval: model.Duration(30 * time.Second),
-			},
+			ServiceDiscoveryConfigs: discovery.Configs{
+				&eureka.SDConfig{
+					Server:           "http://eureka.example.com:8761/eureka",
+					RefreshInterval:  model.Duration(30 * time.Second),
+					HTTPClientConfig: config.DefaultHTTPClientConfig,
+				},
 			},
 		},
 	},
 	AlertingConfig: AlertingConfig{
 		AlertmanagerConfigs: []*AlertmanagerConfig{
 			{
-				Scheme:     "https",
-				Timeout:    model.Duration(10 * time.Second),
-				APIVersion: AlertmanagerAPIVersionV1,
+				Scheme:           "https",
+				Timeout:          model.Duration(10 * time.Second),
+				APIVersion:       AlertmanagerAPIVersionV1,
+				HTTPClientConfig: config.DefaultHTTPClientConfig,
 				ServiceDiscoveryConfigs: discovery.Configs{
 					discovery.StaticConfig{
 						{
@@ -920,6 +966,9 @@ var expectedErrors = []struct {
 		filename: "kubernetes_bearertoken_basicauth.bad.yml",
 		errMsg:   "at most one of basic_auth, bearer_token & bearer_token_file must be configured",
 	}, {
+		filename: "kubernetes_authorization_basicauth.bad.yml",
+		errMsg:   "at most one of basic_auth & authorization must be configured",
+	}, {
 		filename: "marathon_no_servers.bad.yml",
 		errMsg:   "marathon_sd: must contain at least one Marathon server",
 	}, {
@@ -931,6 +980,9 @@ var expectedErrors = []struct {
 	}, {
 		filename: "marathon_authtoken_bearertoken.bad.yml",
 		errMsg:   "marathon_sd: at most one of bearer_token, bearer_token_file, auth_token & auth_token_file must be configured",
+	}, {
+		filename: "marathon_authtoken_authorization.bad.yml",
+		errMsg:   "marathon_sd: at most one of auth_token, auth_token_file & authorization must be configured",
 	}, {
 		filename: "openstack_role.bad.yml",
 		errMsg:   "unknown OpenStack SD role",
@@ -954,10 +1006,13 @@ var expectedErrors = []struct {
 		errMsg:   `url for remote_read is empty`,
 	}, {
 		filename: "remote_write_header.bad.yml",
-		errMsg:   `x-prometheus-remote-write-version is an unchangeable header`,
+		errMsg:   `x-prometheus-remote-write-version is a reserved header. It must not be changed`,
+	}, {
+		filename: "remote_read_header.bad.yml",
+		errMsg:   `x-prometheus-remote-write-version is a reserved header. It must not be changed`,
 	}, {
 		filename: "remote_write_authorization_header.bad.yml",
-		errMsg:   `authorization header must be changed via the basic_auth, bearer_token, or bearer_token_file parameter`,
+		errMsg:   `authorization header must be changed via the basic_auth or authorization parameter`,
 	}, {
 		filename: "remote_write_url_missing.bad.yml",
 		errMsg:   `url for remote_write is empty`,
