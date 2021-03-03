@@ -52,8 +52,9 @@ const (
 
 // DefaultSDConfig is the default DigitalOcean SD configuration.
 var DefaultSDConfig = SDConfig{
-	Port:            80,
-	RefreshInterval: model.Duration(60 * time.Second),
+	Port:             80,
+	RefreshInterval:  model.Duration(60 * time.Second),
+	HTTPClientConfig: config.DefaultHTTPClientConfig,
 }
 
 func init() {
@@ -89,7 +90,7 @@ func (c *SDConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err != nil {
 		return err
 	}
-	return nil
+	return c.HTTPClientConfig.Validate()
 }
 
 // Discovery periodically performs DigitalOcean requests. It implements
