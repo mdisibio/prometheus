@@ -1378,7 +1378,7 @@ loop:
 			exemplarErr = sl.checkAddExemplarError(exemplarErr, e, &appErrs)
 			if exemplarErr != nil {
 				// Since exemplar storage is still experimental, we don't fail the scrape on ingestion errors.
-				level.Debug(sl.l).Log("msg", "Error while adding exemplar in AddExemplar", "exemplar", e, "err", err)
+				level.Debug(sl.l).Log("msg", "Error while adding exemplar in AddExemplar", "exemplar", fmt.Sprintf("%+v", e), "err", exemplarErr)
 			}
 		}
 
@@ -1465,7 +1465,7 @@ func (sl *scrapeLoop) checkAddExemplarError(err error, e exemplar.Exemplar, appE
 		return storage.ErrNotFound
 	case storage.ErrOutOfOrderExemplar:
 		appErrs.numExemplarOutOfOrder++
-		level.Debug(sl.l).Log("msg", "Out of order exemplar", "exemplar", e)
+		level.Debug(sl.l).Log("msg", "Out of order exemplar", "exemplar", fmt.Sprintf("%+v", e))
 		targetScrapeExemplarOutOfOrder.Inc()
 		return nil
 	default:
