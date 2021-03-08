@@ -1310,7 +1310,9 @@ func (a *headAppender) Append(ref uint64, lset labels.Labels, t int64, v float64
 	return s.ref, nil
 }
 
-func (a *headAppender) AppendExemplar(ref uint64, lset labels.Labels, e exemplar.Exemplar) (uint64, error) {
+// AppendExemplar for headAppender assumes the series ref already exists, and so it doesn't
+// use getOrCreate or make any of the lset sanity checks that Append does.
+func (a *headAppender) AppendExemplar(ref uint64, _ labels.Labels, e exemplar.Exemplar) (uint64, error) {
 	// Check if exemplar storage is enabled.
 	if a.head.opts.NumExemplars == 0 {
 		return 0, nil
@@ -1319,17 +1321,6 @@ func (a *headAppender) AppendExemplar(ref uint64, lset labels.Labels, e exemplar
 	s := a.head.series.getByID(ref)
 	if s == nil {
 		return 0, fmt.Errorf("unknown series ref. when trying to add exemplar: %d", ref)
-	}
-
-	// Ensure no empty labels have gotten through.
-	lset = lset.WithoutEmpty()
-
-	if len(lset) == 0 {
-		return 0, errors.Wrap(ErrInvalidExemplar, "empty labelset")
-	}
-
-	if l, dup := lset.HasDuplicateLabelNames(); dup {
-		return 0, errors.Wrap(ErrInvalidExemplar, fmt.Sprintf(`label name "%s" is not unique`, l))
 	}
 
 	a.exemplars = append(a.exemplars, exemplarWithSeriesRef{ref, e})
