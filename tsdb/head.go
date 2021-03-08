@@ -1323,6 +1323,9 @@ func (a *headAppender) AppendExemplar(ref uint64, _ labels.Labels, e exemplar.Ex
 		return 0, fmt.Errorf("unknown series ref. when trying to add exemplar: %d", ref)
 	}
 
+	// Ensure no empty labels have gotten through.
+	e.Labels = e.Labels.WithoutEmpty()
+
 	a.exemplars = append(a.exemplars, exemplarWithSeriesRef{ref, e})
 
 	return s.ref, nil
